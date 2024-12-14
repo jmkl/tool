@@ -1,0 +1,54 @@
+[
+  {
+    "name": "run",
+    "desc": "run comfyui server within the comfyui folder\nC:/Comfyui-2024\n",
+    "exe_path": "C:/Users/jmkl/.conda/envs/comfyui/python.exe",
+    "work_dir": "C:/Comfyui-2024",
+    "command": "ComfyRun",
+    "args": [
+      "main.py",
+      "--enable-cors-header",
+      "--lowvram",
+      "--preview-method",
+      "auto",
+      "--front-end-version",
+      "Comfy-Org/ComfyUI_frontend@latest"
+    ]
+  },
+
+  {
+    "name": "update",
+    "desc": "update comfyui",
+    "exe_path": "git",
+    "work_dir": "C:/Comfyui-2024",
+    "command": "ComfyUpdate",
+
+    "args": ["pull"]
+  },
+  {
+    "name": "kill",
+    "desc": "only name and command is necessary... gonna kill the process by given PID",
+    "exe_path": "taskkill",
+    "work_dir": "C:/",
+    "command": "ComfyKill",
+
+    "args": [""]
+  },
+  {
+    "name": "start",
+    "desc": "start deno server",
+    "exe_path": "deno",
+    "command": "CronRun",
+    "work_dir": "E:/_CODE/typescript/wisma-doc-service",
+    "args": ["--version"]
+  },
+  {
+    "name": "stop",
+    "desc": "stop deno server",
+    "exe_path": "deno",
+    "command": "CronKill",
+
+    "work_dir": "",
+    "args": ["--version"]
+  }
+]
