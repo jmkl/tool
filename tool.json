@@ -40,7 +40,7 @@
     "exe_path": "deno",
     "command": "CronRun",
     "work_dir": "E:/_CODE/typescript/wisma-doc-service",
-    "args": ["--version"]
+    "args": ["run", "dev"]
   },
   {
     "name": "stop",
