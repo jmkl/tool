@@ -95,7 +95,7 @@ const fn state_color(i: usize) -> Color {
     if i % 2 == 0 {
         NORMAL_ROW_BG
     } else {
-        ALT_ROW_BG_COLOR
+        Color::Red
     }
 }
 
@@ -526,7 +526,7 @@ impl App {
                 let color = state_color(i);
                 match menu.status {
                     Status::Idle => ListItem::from(menu).fg(color),
-                    Status::Run => ListItem::from(menu).fg(color).bg(ALT_ROW_BG_COLOR),
+                    Status::Run => ListItem::from(menu).fg(color).bg(Color::Red),
                 }
             })
             .collect();
@@ -569,7 +569,7 @@ version  :{}"#,
         // We can now render the item info
         Paragraph::new(info)
             .block(block)
-            .fg(TEXT_FG_COLOR)
+            .fg(Color::Red)
             .wrap(Wrap { trim: true })
             .render(area, buf);
     }
