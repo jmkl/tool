@@ -1,25 +1,81 @@
-name: Build and Release Tauri App (Windows)
+name: Build and Release
 
 on:
   push:
     tags:
       - "v*" # Trigger the workflow on a tag starting with 'v', e.g., v1.0.0
   workflow_dispatch: # Allow manual triggering of the workflow
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
 
 jobs:
-  release:
-    name: release ${{ matrix.target }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [x86_64-pc-windows-gnu, x86_64-unknown-linux-musl]
+  build:
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@master
-      - name: Compile and release
-        uses: rust-build/rust-build.action@v1.4.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set git config for long paths
+        run: git config --system core.longpaths true
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install C++ build tools
+        uses: ilammy/msvc-dev-cmd@v1
         with:
-          RUSTTARGET: ${{ matrix.target }}
-          EXTRA_FILES: "README.md LICENSE"
+          arch: x64
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run cargo
+        run: cargo build --release
+      - name: Compress binary
+        uses: svenstaro/upx-action@v2
+        with:
+          files: |
+            target/release/tool.exe
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'target\release\tool.exe'
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tool
+          path: target\release\tool.exe
+
+      - name: Set date
+        id: set-date
+        shell: pwsh
+        run: |
+          $CURRENT_DATE = Get-Date -UFormat "%Y.%m.%d"
+          echo "CURRENT_DATE=$CURRENT_DATE" >> $env:GITHUB_ENV
+          echo "CURRENT_DATE=$CURRENT_DATE" >> $env:GITHUB_OUTPUT
+
+      - name: Update Nightly Current
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/auto-release')
+        with:
+          name: Nightly - Current
+          body: This release always contains the newest nightly artifacts.
+          tag_name: nightly
+          prerelease: true
+          files: |
+            target/release/tool.exe
+
+      - name: Release Nightly
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/auto-release')
+        with:
+          name: Nightly ${{ steps.set-date.outputs.CURRENT_DATE }}
+          body: Automated nightly release of tool
+          tag_name: "nightly-${{ steps.set-date.outputs.CURRENT_DATE }}"
+          prerelease: true
+          files: |
+            target/release/tool.exe
